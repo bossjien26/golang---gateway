@@ -1,0 +1,10 @@
+_format_version: "1.1"
+services:
+- url: http://localhost:8001/api/healthz
+  routes:
+  - paths:
+    - "/"
+  plugins:
+  - name: key-checker
+    config:
+      apikey: mysecretconsumerkey
