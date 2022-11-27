@@ -1,6 +1,6 @@
 _format_version: "1.1"
 services:
-- url: http://localhost:8001/api/healthz
+- url: http://testwebapi-service/api/healthz
   routes:
   - paths:
     - "/"
