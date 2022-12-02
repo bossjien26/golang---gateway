@@ -9,7 +9,7 @@ RUN cd /tmp/key-checker/ && \
     go mod init kong-go-plugin && \
     go get -d -v github.com/Kong/go-pluginserver && \
     go build github.com/Kong/go-pluginserver && \
-    go build -buildmode plugin key-checker.go
+    go build -buildmode plugin main.go
 
 FROM  kong/kong-gateway:2.8.0.0-alpine
 
