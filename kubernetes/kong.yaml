@@ -1,45 +1,3 @@
-# apiVersion: charts.helm.k8s.io/v1alpha1
-# kind: Kong
-# metadata:
-#   name: example-kong
-# spec:
-#   proxy:
-#     type: NodePort
-#   env:
-#     prefix: /kong_prefix/
-#   resources:
-#     limits:
-#       cpu: 500m
-#       memory: 2G
-#     requests:
-#       cpu: 100m
-#       memory: 512Mi
-#   ingressController:
-#     enabled: true
-#     ingressClass: example-ingress-class
-#     installCRDs: false
-
-
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: kong-deployment
-#   namespace: kong-gw
-#   labels:
-#     name: kong-deployment
-# spec:
-#   minReadySeconds: 30
-#   strategy:
-#     type: RollingUpdate
-#   replicas: 5
-#   template:
-#     metadata:
-#       name: kong-deployment
-#       labels:
-#         name: kong-deployment
-#     spec:
-      
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -61,20 +19,13 @@ spec:
       #       claimName: file-search-api-pvc
       containers:
       - name: kong-deployment
-        image: kong-demo:latest
+        image: kong-gateway-kong:latest
         imagePullPolicy: Never
         ports:
           - containerPort: 8000
             name: http
           - containerPort: 8443
             name: https
-          - containerPort: 8001
-            name: admin
-          - containerPort: 7946
-            name: cluster
-          - containerPort: 7946
-            protocol: UDP
-            name: cluster-udp
         resources:
           limits:
             cpu: 500m
@@ -85,21 +36,24 @@ spec:
         env:
           - name: KONG_DATABASE
             value: "off"
-          - name: KONG_GO_PLUGINS_DIR
-            value: /tmp/go-plugins
           - name: KONG_DECLARATIVE_CONFIG
-            value: /tmp/config.yml
+            value: /usr/local/kong/declarative/kong.yml
           - name: KONG_PLUGINS
-            value: key-checker
-          # - name: KONG_PROXY_LISTEN
-          #   value: 0.0.0.0:8000
-          # - name: kong-deployment_CLUSTER_PROFILE
-          #   value: wan
-          # - name: kong-deployment_DNSMASQ
-          #   value: 'off'
-        # envFrom:
-        # - secretRef:
-        #     name: dotenv
+            value: go-wait
+          - name: KONG_PLUGINSERVER_NAMES
+            value: go-wait
+          - name: KONG_PLUGINSERVER_GO_WAIT_QUERY_CMD
+            value: /usr/local/bin/go-wait -dump
+          - name: KONG_LOG_LEVEL
+            value: info
+          - name: KONG_PROXY_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_ADMIN_ACCESS_LOG
+            value: /dev/stdout
+          - name: KONG_PROXY_ERROR_LOG
+            value: /dev/stderr
+          - name: KONG_ADMIN_ERROR_LOG
+            value: /dev/stderr
 ---
 
 apiVersion: v1
@@ -113,7 +67,7 @@ spec:
   type: NodePort
   ports:
     - name: proxy-listen
-      port: 443
+      port: 8000
       targetPort: 8000
   selector:
     name: kong-deployment

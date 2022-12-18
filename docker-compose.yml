@@ -7,6 +7,7 @@ networks:
 services:
   kong:
     # container_name: kong-test
+    container_name: kong-gw
     build:
       context: .
       dockerfile: gowait/Dockerfile
@@ -49,9 +50,9 @@ services:
       - "3001:3001"
     restart: on-failure
 
-  redis:                            # 可以隨意命名，通常以有意義的字串命名
-    image: redis:5.0.5-alpine       # 服務容器，若無指定版號表示使用 latest 版本， alpine 容器佔用空間較小，通常建議使用
-    container_name: redis-test
+  redis:       
+    image: redis:5.0.5-alpine
+    container_name: redis-service
     ports:
       - "6379:6379"
     networks:

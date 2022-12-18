@@ -15,7 +15,7 @@ var _redisConfig = &RedisConfig{}
 
 func ConnectRedisClient() {
 	ctx := context.Background()
-	client := NewClient(ctx, "redis:6379")
+	client := NewClient(ctx, "redis-pod-service:6379")
 	_redisConfig = &RedisConfig{
 		ctx:    ctx,
 		client: client,

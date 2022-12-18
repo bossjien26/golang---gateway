@@ -21,3 +21,13 @@ services:
       - name: go-wait
         config:
           waittime: 5
+  - name: app1-service
+    url: http://testwebapi-service.file-service
+    routes:
+      - name: test1-route
+        paths:
+          - /test1
+    plugins:
+      - name: go-wait
+        config:
+          waittime: 5

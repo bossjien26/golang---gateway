@@ -1,0 +1,60 @@
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: redis-service-config
+#   namespace: kong-gw
+# type: Opaque
+# data:
+#   redis.password: ZXhhbXBsZQ==
+# ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-service-deployment
+  namespace: kong-gw
+spec:
+  selector:
+    matchLabels:
+      app: redis-pod
+      role: redis
+  template:
+    metadata:
+      labels:
+        app: redis-pod
+        role: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:5.0.5-alpine
+          imagePullPolicy: Never
+          resources:
+            limits:
+              cpu: 100m
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          # env:
+            # - name: REDIS_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: redis-service-config
+            #       key: redis.password
+      # imagePullSecrets:
+      #   - name: redis-service-pull-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-pod-service
+  namespace: kong-gw
+  # labels:
+  #   app: redis-pod
+  #   role: redis
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: redis-pod
+    # role: redis
+  type: NodePort
