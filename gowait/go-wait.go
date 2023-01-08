@@ -15,6 +15,7 @@ var _redisConfig = &RedisConfig{}
 
 func ConnectRedisClient() {
 	ctx := context.Background()
+	// client := NewClient(ctx, "host.docker.internal:6379")
 	client := NewClient(ctx, "redis-pod-service:6379")
 	_redisConfig = &RedisConfig{
 		ctx:    ctx,
@@ -58,6 +59,8 @@ type AuthClaims struct {
 
 type Config struct {
 	WaitTime int
+
+	Apikey string
 }
 
 type RequestHeader struct {
@@ -132,30 +135,32 @@ func (config Config) Access(kong *pdk.PDK) {
 	// } else {
 	// 	requests[host] = time.Now()
 	// }
+	publicKey, publicKeyErr := kong.Request.GetHeader("publicKey")
+	serviceKey, serviceKeyErr := kong.Request.GetHeader("serviceKey")
 
-	serviceKey, _ := kong.Request.GetHeader("serviceKey")
-	publicKey, _ := kong.Request.GetHeader("publicKey")
+	if publicKeyErr != nil {
+		kong.Log.Err(publicKeyErr.Error())
+	}
+
+	if serviceKeyErr != nil {
+		kong.Log.Err(serviceKeyErr.Error())
+	}
+
+	apiServiceKey := config.Apikey
+
 	requestHeader.serviceKey = serviceKey
 	requestHeader.publicKey = publicKey
-	// if serviceKeyErr != nil || publicKeyErr != nil {
-	// 	fmt.Println("test")
-	// 	// kong.Log.Err(serviceKeyErr.Error())
-	// 	// kong.Log.Err(publicKeyErr.Error())
-	// }
 
-	// println(kong.Request.GetHeader("key"))
-	id, name, redisKey := ValidateToken(requestHeader.publicKey)
-	// fmt.Println(id, name, redisKey)
-
-	// apiKey := config.WaitTime
 	host, _ := kong.Request.GetHost()
-	// keys := GetVal("key")
+	if apiServiceKey == serviceKey && serviceKey == "mysecretconsumerkey" {
+		_requests[host] = time.Now()
+		return
+	}
+
+	id, name, redisKey := ValidateToken(requestHeader.publicKey)
 	ConnectRedisClient()
 	var token = GetVal("key")
-	// if serviceKey == "" || token == "" {
-	if serviceKey == "" || token == "" || id == 0 || name == "" || redisKey == "" {
-		// if apiKey != serviceKey || id == 0 {
-
+	if apiServiceKey != serviceKey || token == "" || id == 0 || name == "" || redisKey == "" {
 		response := make([]string, 1)
 		response[0] = "You have no correct key"
 		j, _ := json.Marshal(response)
